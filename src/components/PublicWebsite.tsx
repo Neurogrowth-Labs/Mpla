@@ -194,13 +194,13 @@ export default function PublicWebsite({
   const leaders = [
     {
       name: "Camarada Francisco Carlos",
-      role_pt: "Primeiro Secretário do Comité do Partido do MPLA na África do Sul",
+      role_pt: "Primeiro Secretário do Comité do Partido MPLA NA África do Sul",
       role_en: "First Secretary of the MPLA Party Committee in South Africa",
       committee: "national",
       bio_pt: "Líder supremo e Primeiro Secretário da comissão executiva do comité do Partido do MPLA na África do Sul, guiando a integração, filiação digital e apoio consular.",
       bio_en: "Leader and First Secretary of the executive committee of the MPLA Party Committee in South Africa, guiding integration, digital enrollment, and consular support.",
-      speech_pt: "A nossa missão em toda a África do Sul é fortalecer a unidade da comunidade angolana através de inovação, amparo social e cooperação patriótica. Contacto: +27 82 555 9011 | Email: contactar@mplaas.co.za",
-      speech_en: "Our mission across South Africa is to strengthen the unity of the Angolan community through innovation, social support, and patriotic cooperation. Contact: +27 82 555 9011 | Email: contactar@mplaas.co.za",
+      speech_pt: "A nossa missão em toda a África do Sul é fortalecer a unidade da comunidade angolana através de inovação, amparo social e cooperação patriótica. Contacto: +27655729947 | Email: mplaafricadosul@gmail.com",
+      speech_en: "Our mission across South Africa is to strengthen the unity of the Angolan community through innovation, social support, and patriotic cooperation. Contact: +27655729947 | Email: mplaafricadosul@gmail.com",
       photo: mplaPptImg
     },
     {
@@ -1446,11 +1446,11 @@ export default function PublicWebsite({
               <div className="space-y-2 pt-1 border-t border-white/10 text-xs font-mono text-slate-300">
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[#D4AF37]" />
-                  <span>+27 82 555 9011</span>
+                  <span>+27655729947</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-[#D4AF37]" />
-                  <span className="truncate">contactar@mplaas.co.za</span>
+                  <span className="truncate">mplaafricadosul@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-[#D4AF37]" />
@@ -1458,11 +1458,11 @@ export default function PublicWebsite({
                 </div>
               </div>
 
-              <div className="pt-1">
+              {/*<div className="pt-1">
                 <span className="px-3 py-1 bg-amber-400/20 text-[#D4AF37] border border-[#D4AF37]/30 rounded-lg text-[10px] font-mono font-bold uppercase block text-center">
                   COMITÉ DO PARTIDO DO MPLA NA ÁFRICA DO SUL
                 </span>
-              </div>
+              </div>*/}
             </div>
           </div>
 
@@ -3204,7 +3204,7 @@ export default function PublicWebsite({
               <div className="space-y-1">
                 <p className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                  <span>contactar@mplaas.co.za</span>
+                  <span>mplaafricadosul@gmail.com</span>
                 </p>
               </div>
               <p className="flex items-center gap-2">
