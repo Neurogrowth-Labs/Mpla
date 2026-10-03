@@ -2086,10 +2086,14 @@ export default function PublicWebsite({
             <div className="lg:col-span-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative group overflow-hidden">
               <div className="relative h-80 overflow-hidden bg-slate-100 shrink-0">
                 <img 
-                  src={news1}
+                  src={newsArticles[0].image || news1}
                   alt="MPLA news cover" 
                   className="w-full h-full object-cover group-hover:scale-[1.02] transition duration-700 filter brightness-95"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = news1;
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
                 <span className="absolute bottom-4 left-4 bg-[#B5121B] text-white text-[9px] font-mono font-black uppercase tracking-wider px-2.5 py-1 rounded-sm shadow-md">
