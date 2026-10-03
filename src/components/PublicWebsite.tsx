@@ -135,8 +135,8 @@ export default function PublicWebsite({
       year: 1956,
       title_pt: "Fundação do MPLA",
       title_en: "MPLA Foundation",
-      desc_pt: "Nascimento do Movimento Popular de Libertação de Angola, lançando as bases para a autodeterminação nacional.",
-      desc_en: "Birth of the Popular Movement for the Liberation of Angola, laying the ground for national self-determination.",
+      desc_pt: "Nascimento do MPLA, lançando as bases para a autodeterminação nacional.",
+      desc_en: "Birth of the Popular MPLA, laying the ground for national self-determination.",
       milestone: "Unidade e Luta",
       image: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=500&q=80"
     },
@@ -1593,7 +1593,7 @@ export default function PublicWebsite({
                 JMPLA
               </h2>
               <p className="text-sm font-semibold text-[#D4AF37] tracking-wider uppercase font-mono">
-                {language === "PT" ? "Juventude do Movimento Popular de Libertação de Angola" : "Youth of the Popular Movement for the Liberation of Angola"}
+                {/*language === "PT" ? "Juventude do Movimento Popular de Libertação de Angola" : "Youth of the Popular Movement for the Liberation of Angola"*/}
               </p>
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs sm:text-sm font-light">
                 {language === "PT" 
@@ -3199,7 +3199,7 @@ export default function PublicWebsite({
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                <span>+27 11 555 0192</span>
+                <span>+27655729947</span>
               </p>
               <div className="space-y-1">
                 <p className="flex items-center gap-2">
