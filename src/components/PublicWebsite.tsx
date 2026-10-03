@@ -136,7 +136,7 @@ export default function PublicWebsite({
       title_pt: "Fundação do MPLA",
       title_en: "MPLA Foundation",
       desc_pt: "Nascimento do MPLA, lançando as bases para a autodeterminação nacional.",
-      desc_en: "Birth of the Popular MPLA, laying the ground for national self-determination.",
+      desc_en: "Birth of the MPLA, laying the ground for national self-determination.",
       milestone: "Unidade e Luta",
       image: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=500&q=80"
     },
