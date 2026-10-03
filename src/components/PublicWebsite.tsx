@@ -831,7 +831,7 @@ export default function PublicWebsite({
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo Brand */}
           <a href="#portal-root" className="flex items-center gap-3.5 group">
-            <div className="w-12 h-12 bg-transparent flex items-center justify-center p-0 shadow-none transform group-hover:scale-105 transition duration-300">
+            <div className="w-16 h-16 bg-transparent flex items-center justify-center p-0 shadow-none transform group-hover:scale-105 transition duration-300">
               <img 
                 src={LOCAL_MPLA_PARTY_LOGO} 
                 alt="MPLA Logo" 
@@ -839,7 +839,7 @@ export default function PublicWebsite({
               />
             </div>
             <div>
-              <h2 className="font-extrabold text-sm sm:text-base tracking-tight leading-none text-white uppercase font-display">
+              <h2 className="font-extrabold text-lg sm:text-xl tracking-tight leading-none text-white uppercase font-display">
                 MPLA África do Sul
               </h2>
               <p className="text-[9px] text-[#D4AF37] font-mono font-black tracking-widest mt-1 uppercase">
