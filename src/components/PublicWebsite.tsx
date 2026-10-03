@@ -1431,14 +1431,14 @@ export default function PublicWebsite({
               <div className="relative rounded-xl overflow-hidden border-2 border-[#D4AF37]/50 shadow-lg group-hover:border-[#D4AF37] transition">
                 <img 
                   src={mplaPptImg} 
-                  alt="Camarada Francisco Carlos - Primeiro Secretário do Comité do Partido do MPLA na África do Sul" 
+                  alt="Camarada Francisco Carlos - Primeiro Secretário do Comité do Partido MPLA na África do Sul" 
                   className="w-full h-64 object-cover object-top hover:scale-105 transition duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 text-left">
                   <h3 className="text-lg font-black text-white drop-shadow-md">Camarada Francisco Carlos</h3>
                   <p className="text-[11px] font-mono text-[#D4AF37] font-extrabold tracking-wide drop-shadow-sm">
-                    {language === "PT" ? "Primeiro Secretário do Comité do Partido do MPLA na África do Sul" : "First Secretary of the MPLA Party Committee in South Africa"}
+                    {language === "PT" ? "Primeiro Secretário do Comité do Partido MPLA na África do Sul" : "First Secretary of the MPLA Party Committee in South Africa"}
                   </p>
                 </div>
               </div>
