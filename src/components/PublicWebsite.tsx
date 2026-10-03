@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import news1 from "../assets/images/news_1.jpeg";
 import { 
   Phone, Mail, Clock, Globe, ArrowRight, User, Shield, Users, 
   Calendar, MapPin, Award, BookOpen, Volume2, ShieldCheck, 
@@ -2085,7 +2086,7 @@ export default function PublicWebsite({
             <div className="lg:col-span-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative group overflow-hidden">
               <div className="relative h-80 overflow-hidden bg-slate-100 shrink-0">
                 <img 
-                  src={newsArticles[0].image || "/src/assets/images/news_1.jpeg"} 
+                  src={newsArticles[0].image || news1}
                   alt="MPLA news cover" 
                   className="w-full h-full object-cover group-hover:scale-[1.02] transition duration-700 filter brightness-95"
                   referrerPolicy="no-referrer"
