@@ -4,6 +4,11 @@ import { Member, Announcement, PartyEvent, LearningCourse, SupportTicket, ChatCh
 import DigitalCard from "./DigitalCard";
 import AbsaPaymentCheckoutModal from "./AbsaPaymentCheckoutModal";
 import VodaPayPaymentCheckoutModal from "./VodaPayPaymentCheckoutModal";
+import MemberProfile from "./MemberProfile";
+import MemberSecurityDiagnosticSuite from "./MemberSecurityDiagnosticSuite";
+import OfficialMemberCertificateModal from "./OfficialMemberCertificateModal";
+import { showToast } from "../lib/notifications";
+import { safePrintHtml } from "../lib/printUtils";
 import { 
   LOCAL_JOAO_LOURENCO_IMAGE,
   EVENT_CONFERENCE_COVER,
@@ -95,6 +100,7 @@ export default function MemberPortalViews({
       return <CommitteeDetailsView member={member} announcements={announcements} />;
     case "support":
     case "feedback":
+    case "tickets":
       return <SupportCentreView member={member} tickets={tickets} onSubmitTicket={onSubmitTicket} onSubmitTicketReply={onSubmitTicketReply} />;
     case "settings":
       return <SettingsView member={member} onUpdateProfile={onUpdateProfile} />;
@@ -310,6 +316,7 @@ function HomeDashboardView({ member, events, announcements, onChangeTab, onRegis
 // 2. PROFILE LINKEDIN VIEW
 // ==========================================
 function ProfileLinkedInView({ member, onUpdateProfile, onChangeTab }: { member: Member, onUpdateProfile: (updatedData: Partial<Member>) => void, onChangeTab: (tab: any) => void }) {
+  const [profileMode, setProfileMode] = useState<"overview" | "editor">("overview");
   const [activeTab, setActiveTab] = useState<"about" | "membership" | "activity" | "payments">("about");
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(member.fullName);
@@ -440,8 +447,43 @@ function ProfileLinkedInView({ member, onUpdateProfile, onChangeTab }: { member:
     );
   };
 
+  if (profileMode === "editor") {
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <button
+            onClick={() => setProfileMode("overview")}
+            className="text-xs font-bold text-[#D3122A] hover:bg-red-50 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+          >
+            ← Voltar à Visão Geral do Perfil
+          </button>
+          <span className="text-xs font-mono font-bold text-slate-500 uppercase">
+            Configuração de Coordenadas, Fotografia & Palavra-passe
+          </span>
+        </div>
+        <MemberProfile member={member} onUpdateProfile={onUpdateProfile} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Profile Mode Navigation Switcher */}
+      <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold gap-1 self-start max-w-sm">
+        <button
+          onClick={() => setProfileMode("overview")}
+          className="flex-1 py-1.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 bg-white text-[#D3122A] font-bold shadow-xs"
+        >
+          <Globe className="w-3.5 h-3.5" /> Visão Pública
+        </button>
+        <button
+          onClick={() => setProfileMode("editor")}
+          className="flex-1 py-1.5 px-3 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-600 hover:text-slate-900"
+        >
+          <User className="w-3.5 h-3.5" /> Editar Coordenadas
+        </button>
+      </div>
+
       {/* cover and header banner card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         {/* Cover Photo */}
@@ -449,10 +491,10 @@ function ProfileLinkedInView({ member, onUpdateProfile, onChangeTab }: { member:
           <div className="absolute inset-0 bg-black/15" />
           <div className="absolute right-4 bottom-4 flex gap-2">
             <button 
-              onClick={() => onChangeTab("settings")}
+              onClick={() => setProfileMode("editor")}
               className="p-2 bg-white/20 backdrop-blur-md rounded-lg text-white border border-white/20 hover:bg-white/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
-              <Camera className="w-4 h-4" /> Alterar Capa & Foto
+              <Camera className="w-4 h-4" /> Alterar Capa, Foto & Dados
             </button>
           </div>
         </div>
@@ -1117,7 +1159,10 @@ function ProfileLinkedInView({ member, onUpdateProfile, onChangeTab }: { member:
               <div className="space-y-5 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <p className="text-slate-400 font-mono uppercase text-[9px] font-bold">Número de Matrícula Partidária</p>
+                    <p className="text-slate-400 font-mono uppercase text-[9px] font-bold flex items-center gap-1.5">
+                      <span>Número de Identificação Militante (ADL)</span>
+                      <span className="text-[8px] bg-red-50 text-[#C8102E] font-bold px-1.5 py-0.2 rounded border border-red-100">OFICIAL</span>
+                    </p>
                     <p className="font-bold text-slate-800 text-sm font-mono text-[#C8102E]">{member.membershipNo}</p>
                   </div>
                   <div className="space-y-2">
@@ -1328,13 +1373,13 @@ function DigitalCardFullScreenView({ member }: { member: Member }) {
         <button onClick={() => window.print()} className="p-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-slate-50 transition cursor-pointer shadow-sm">
           <Printer className="w-4.5 h-4.5 text-slate-500" /> Imprimir Cartão
         </button>
-        <button onClick={() => alert("PDF com o cartão gerado para download!")} className="p-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-slate-50 transition cursor-pointer shadow-sm">
+        <button onClick={() => showToast("PDF do cartão oficial gerado para download!", "info")} className="p-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-slate-50 transition cursor-pointer shadow-sm">
           <FileText className="w-4.5 h-4.5 text-slate-500" /> Exportar PDF
         </button>
-        <button onClick={() => alert("Link de verificação copiado!")} className="p-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-slate-50 transition cursor-pointer shadow-sm">
+        <button onClick={() => { navigator.clipboard?.writeText(window.location.href); showToast("Link oficial de validação copiado!", "success"); }} className="p-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-slate-50 transition cursor-pointer shadow-sm">
           <Share2 className="w-4.5 h-4.5 text-slate-500" /> Partilhar Credencial
         </button>
-        <button onClick={() => alert("Adicionado ao Apple Wallet com sucesso.")} className="p-3 bg-[#FFCC00] text-slate-950 font-black rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-yellow-500 transition cursor-pointer shadow-sm">
+        <button onClick={() => showToast("Credencial digital adicionada à Carteira Móvel com sucesso.", "success")} className="p-3 bg-[#FFCC00] text-slate-950 font-black rounded-xl text-xs flex flex-col items-center gap-1.5 hover:bg-yellow-500 transition cursor-pointer shadow-sm">
           <Sparkles className="w-4.5 h-4.5" /> Adicionar Carteira
         </button>
       </div>
@@ -1552,7 +1597,7 @@ function DocumentsManagerView({ member }: { member: Member }) {
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDocTitle || !selectedFileName) {
-      alert("Por favor indique o título e selecione um ficheiro.");
+      showToast("Por favor indique o título e selecione um ficheiro.", "warning");
       return;
     }
 
@@ -1573,7 +1618,7 @@ function DocumentsManagerView({ member }: { member: Member }) {
 
       const data = await res.json();
       if (data.success) {
-        alert("Documento submetido e enviado ao Super Administrador em tempo real!");
+        showToast("Documento submetido e enviado ao Super Administrador em tempo real!", "success");
         setShowUploadModal(false);
         setNewDocTitle("");
         setNewDocDescription("");
@@ -1581,7 +1626,7 @@ function DocumentsManagerView({ member }: { member: Member }) {
         fetchDocuments();
       }
     } catch (err) {
-      alert("Erro ao enviar ficheiro. Tente novamente.");
+      showToast("Erro ao enviar ficheiro. Tente novamente.", "error");
     } finally {
       setUploading(false);
     }
@@ -1917,7 +1962,7 @@ function PaymentsDashboardView({ member, onMakePayment }: { member: Member, onMa
       return;
     }
     if (cardStatus === 'Blocked') {
-      alert("O seu cartão de débito virtual está bloqueado. Desbloqueie o cartão para efetuar pagamentos.");
+      showToast("O seu cartão de débito virtual está bloqueado. Desbloqueie o cartão para efetuar pagamentos.", "warning");
       return;
     }
     onMakePayment(payAmount, payPurpose, payMethod);
@@ -1936,6 +1981,7 @@ function PaymentsDashboardView({ member, onMakePayment }: { member: Member, onMa
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "toggle_block" })
       });
+      showToast(`Cartão virtual ${newStatus === 'Active' ? 'desbloqueado' : 'bloqueado'} com sucesso.`, "info");
     } catch (err) {
       console.error("Error toggling card status:", err);
     }
@@ -1954,19 +2000,17 @@ function PaymentsDashboardView({ member, onMakePayment }: { member: Member, onMa
       if (data.success) {
         setCardBalance(data.member.virtualCardBalance);
         setShowFundModal(false);
-        alert(`Sucesso! Foram recarregados R${fundAmount}.00 no seu cartão virtual via Whop Gateway.`);
+        showToast(`Sucesso! Foram recarregados R${fundAmount}.00 no seu cartão virtual via Whop Gateway.`, "success");
       }
     } catch (err) {
-      alert("Erro ao recarregar o cartão via Whop.");
+      showToast("Erro ao recarregar o cartão via Whop.", "error");
     } finally {
       setFunding(false);
     }
   };
 
   const handlePrintSingleReceipt = (tx: any) => {
-    const printWin = window.open("", "_blank");
-    if (!printWin) return;
-    printWin.document.write(`
+    const receiptHtml = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -2000,10 +2044,9 @@ function PaymentsDashboardView({ member, onMakePayment }: { member: Member, onMa
           <p style="font-size: 10px; color: #94A3B8; text-align: center;">Emitido eletronicamente pelo Sistema de Gestão do MPLA África do Sul.</p>
         </body>
       </html>
-    `);
-    printWin.document.close();
-    printWin.focus();
-    setTimeout(() => { printWin.print(); }, 400);
+    `;
+    safePrintHtml(receiptHtml, "Recibo-Oficial-MPLA");
+    showToast("Comprovativo de quitação pronto para impressão!", "success");
   };
 
   return (
@@ -2772,7 +2815,7 @@ function EventsCarouselView({ member, events, onRegisterEvent }: { member: Membe
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-bold">
                 <button
                   onClick={() => {
-                    alert("Aviso: Por favor use o atalho do seu dispositivo (ex: Volume Baixo + Botão de Ligar, ou cmd+shift+4) para guardar a imagem do Comprovativo de Inscrição.");
+                    showToast("Use o atalho do seu dispositivo (ex: Volume + Power, ou Cmd+Shift+4) para guardar a imagem.", "info");
                     setSuccessEventId(null);
                   }}
                   className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
@@ -2810,6 +2853,11 @@ function LearningCentreView({ member, courses, onCompleteCourse }: { member: Mem
   const [quizChecked, setQuizChecked] = useState(false);
   const [quizSuccess, setQuizSuccess] = useState<boolean | null>(null);
   const [studyTab, setStudyTab] = useState<"read" | "case" | "quiz">("read");
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+
+  const totalAssignments = courses.length;
+  const completedCount = courses.filter(c => member.completedCourses?.includes(c.id)).length;
+  const hasPassedAll = totalAssignments > 0 && completedCount === totalAssignments;
 
   const categories = ["Valores", "Política", "Comunidade", "Liderança"];
 
@@ -2840,7 +2888,7 @@ function LearningCentreView({ member, courses, onCompleteCourse }: { member: Mem
     const totalQuestions = activeCourse.quiz.length;
     const answeredCount = Object.keys(selectedAnswers).length;
     if (answeredCount < totalQuestions) {
-      alert("Por favor, responda a todas as perguntas antes de verificar.");
+      showToast("Por favor, responda a todas as perguntas antes de verificar.", "warning");
       return;
     }
 
@@ -3030,10 +3078,10 @@ function LearningCentreView({ member, courses, onCompleteCourse }: { member: Mem
                   <button
                     onClick={() => {
                       if (!reflectionText.trim()) {
-                        alert("Por favor escreva a sua reflexão antes de guardar.");
+                        showToast("Por favor escreva a sua reflexão antes de guardar.", "warning");
                         return;
                       }
-                      alert("A sua reflexão de estudo foi gravada com sucesso no seu Registo de Progresso Pessoal.");
+                      showToast("A sua reflexão de estudo foi gravada com sucesso no seu Registo de Progresso Pessoal.", "success");
                     }}
                     className="px-4 py-2 bg-slate-900 hover:bg-slate-950 text-white font-bold text-xs rounded-xl transition cursor-pointer"
                   >
@@ -3155,12 +3203,46 @@ function LearningCentreView({ member, courses, onCompleteCourse }: { member: Mem
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl border border-yellow-200 p-5 space-y-3">
-              <Award className="w-8 h-8 text-yellow-600" />
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">Certificado de Capacitação</h4>
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <Award className="w-7 h-7 text-amber-600" />
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                  hasPassedAll 
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
+                    : "bg-amber-100 text-amber-800 border-amber-200"
+                }`}>
+                  {hasPassedAll ? "Homologado" : `${completedCount}/${totalAssignments} Tarefas`}
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">Certificado Oficial da Academia</h4>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                Ao ler todo o material e responder com sucesso à autoavaliação (obtendo 100% de aproveitamento), a plataforma emitirá automaticamente um selo de qualificação de militante na sua ficha de perfil.
+                {hasPassedAll 
+                  ? "Parabéns! Completou com êxito todas as tarefas da Academia Política. O seu certificado oficial emitido pelo Secretário-Geral e pelo Presidente da República está disponível."
+                  : `O Certificado Oficial de Mérito só é emitido após aprovação em todas as ${totalAssignments} tarefas curriculares e avaliações.`}
               </p>
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsCertModalOpen(true)}
+                  className={`w-full py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+                    hasPassedAll
+                      ? "bg-[#C8102E] hover:bg-[#A50D24] text-white"
+                      : "bg-slate-900 hover:bg-slate-950 text-white"
+                  }`}
+                >
+                  {hasPassedAll ? (
+                    <>
+                      <Award className="w-4 h-4 text-[#FFCC00]" />
+                      <span>Emitir Certificado Oficial (PDF)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Ver Requisitos do Certificado</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -3175,6 +3257,71 @@ function LearningCentreView({ member, courses, onCompleteCourse }: { member: Mem
         <p className="text-xs text-slate-500">
           Manual de Formação Autoguiada para Militantes, Quadros e Simpatizantes. Desenvolva os seus conhecimentos doutrinários ao seu próprio ritmo.
         </p>
+      </div>
+
+      {/* Official Certificate Progression Banner */}
+      <div className={`p-5 rounded-2xl border transition-all ${
+        hasPassedAll 
+          ? "bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 border-emerald-200" 
+          : "bg-gradient-to-r from-amber-50/70 via-red-50/40 to-slate-50 border-amber-200/80"
+      }`}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1.5 flex-1">
+            <div className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-[#C8102E]" />
+              <h3 className="font-display font-black text-sm text-slate-900 uppercase tracking-wide">
+                Certificado Oficial de Mérito & Formação Política
+              </h3>
+              <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                hasPassedAll 
+                  ? "bg-emerald-100 text-emerald-800 border-emerald-300" 
+                  : "bg-amber-100 text-amber-900 border-amber-200"
+              }`}>
+                {hasPassedAll ? "100% Concluído" : "Acesso Condicionado"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
+              {hasPassedAll 
+                ? `O camarada ${member.fullName} concluiu com aproveitamento integral todas as ${totalAssignments} unidades curriculares. O Certificado Oficial assinado pelo Secretário-Geral do MPLA e pelo Presidente da República está homologado!`
+                : `Conforme os estatutos, o Certificado Oficial do MPLA só é gerado após o militante completar todas as ${totalAssignments} avaliações da Academia Política (${completedCount} de ${totalAssignments} concluídas).`}
+            </p>
+            {/* Progress bar */}
+            <div className="max-w-md pt-1 space-y-1">
+              <div className="flex justify-between text-[10px] font-mono font-bold text-slate-600">
+                <span>Progresso Curricular:</span>
+                <span className="text-[#C8102E]">{completedCount} de {totalAssignments} Módulos ({totalAssignments > 0 ? Math.round((completedCount / totalAssignments) * 100) : 0}%)</span>
+              </div>
+              <div className="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-[#C8102E] to-amber-500 h-full rounded-full transition-all duration-500" 
+                  style={{ width: `${totalAssignments > 0 ? (completedCount / totalAssignments) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsCertModalOpen(true)}
+            className={`px-5 py-3 rounded-xl font-bold text-xs transition flex items-center gap-2 shrink-0 cursor-pointer shadow-sm ${
+              hasPassedAll 
+                ? "bg-[#C8102E] hover:bg-[#A50D24] text-white shadow-red-200" 
+                : "bg-slate-900 hover:bg-slate-950 text-white"
+            }`}
+          >
+            {hasPassedAll ? (
+              <>
+                <Award className="w-4 h-4 text-[#FFCC00]" />
+                <span>Emitir Certificado Oficial (PDF)</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Ver Requisitos ({completedCount}/{totalAssignments})</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-700 text-xs leading-relaxed space-y-2">
@@ -3235,6 +3382,15 @@ function LearningCentreView({ member, courses, onCompleteCourse }: { member: Mem
           </div>
         );
       })}
+
+      {/* Official Certificate Modal */}
+      <OfficialMemberCertificateModal
+        isOpen={isCertModalOpen}
+        onClose={() => setIsCertModalOpen(false)}
+        member={member}
+        courses={courses}
+        onGoToCourse={(courseId) => handleStartCourse(courseId)}
+      />
     </div>
   );
 }
@@ -3278,8 +3434,8 @@ function NewsFeedView({ announcements }: { announcements: Announcement[] }) {
               <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
                 <span className="text-[10px] text-slate-400 font-mono font-bold">Autor: {news.author}</span>
                 <div className="flex gap-2 text-slate-400">
-                  <button onClick={() => alert("Gostou!")} className="p-1 hover:bg-slate-100 rounded text-[#C8102E]"><Heart className="w-4 h-4" /></button>
-                  <button onClick={() => alert("Guardado!")} className="p-1 hover:bg-slate-100 rounded text-slate-600"><Bookmark className="w-4 h-4" /></button>
+                  <button onClick={() => showToast("Publicação curtida!", "success")} className="p-1 hover:bg-slate-100 rounded text-[#C8102E] cursor-pointer"><Heart className="w-4 h-4" /></button>
+                  <button onClick={() => showToast("Publicação guardada nos favoritos!", "info")} className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"><Bookmark className="w-4 h-4" /></button>
                 </div>
               </div>
             </div>
@@ -3928,7 +4084,7 @@ function SupportCentreView({ member, tickets, onSubmitTicket, onSubmitTicketRepl
     if (!replyText.trim()) return;
     onSubmitTicketReply(tId, replyText);
     setReplyText("");
-    alert("Resposta submetida com sucesso!");
+    showToast("Resposta submetida com sucesso!", "success");
   };
 
   return (
@@ -4075,7 +4231,7 @@ function VolunteeringMissionsView({ member }: { member: Member }) {
           <h2 className="text-xl font-display font-black text-slate-900 tracking-tight">Voluntariado & Missões Partidárias</h2>
           <p className="text-xs text-slate-500">Inscreva-se em brigadas comunitárias, acompanhe horas registradas e obtenha certificados de mérito.</p>
         </div>
-        <button onClick={() => alert("Sua candidatura para nova brigada de voluntariado foi registada!")} className="px-4 py-2 bg-[#C8102E] text-white rounded-xl text-xs font-bold hover:bg-red-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm">
+        <button onClick={() => showToast("Sua candidatura para nova brigada de voluntariado foi registada!", "success")} className="px-4 py-2 bg-[#C8102E] text-white rounded-xl text-xs font-bold hover:bg-red-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm">
           <Plus className="w-4 h-4" /> Inscrever-se em Nova Missão
         </button>
       </div>
@@ -4155,7 +4311,7 @@ function VolunteeringMissionsView({ member }: { member: Member }) {
 
             <div className="flex justify-between items-center text-xs pt-2">
               <span className="text-[10px] text-slate-400 font-mono">Prazo: {m.deadline}</span>
-              <button onClick={() => alert("Relatório de atividade submetido ao supervisor.")} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-bold transition cursor-pointer">
+              <button onClick={() => showToast("Relatório de atividade submetido ao supervisor.", "success")} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-bold transition cursor-pointer">
                 Registar Horas
               </button>
             </div>
@@ -4314,7 +4470,7 @@ function BenefitsAndAwardsView({ member }: { member: Member }) {
                 <h4 className="font-bold text-slate-900 text-sm">{b.title}</h4>
                 <p className="text-[10px] text-[#C8102E] font-mono font-bold">{b.partner}</p>
                 <p className="text-xs text-slate-600 leading-relaxed mt-1">{b.desc}</p>
-                <button onClick={() => alert("Benefício solicitado! O código de cupão consular foi enviado para o seu email.")} className="mt-2 px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-bold hover:bg-slate-800 transition cursor-pointer">
+                <button onClick={() => showToast("Benefício solicitado! O código de cupão consular foi enviado para o seu email.", "success")} className="mt-2 px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-bold hover:bg-slate-800 transition cursor-pointer">
                   Ativar Benefício
                 </button>
               </div>
@@ -4380,6 +4536,9 @@ function SettingsView({ member, onUpdateProfile }: { member: Member, onUpdatePro
           </div>
         </div>
       </div>
+
+      {/* Real-time Account Security Diagnostic Suite */}
+      <MemberSecurityDiagnosticSuite isAdmin={false} />
     </div>
   );
 }
