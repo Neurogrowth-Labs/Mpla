@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Member, MemberSocialLinks, MemberFieldVisibility, FieldVisibilityLevel } from "../types";
 import { DEFAULT_MEMBER_AVATAR } from "../images";
+import { showToast } from "../lib/notifications";
 import { 
   User, Mail, Phone, MapPin, Briefcase, Award, ShieldAlert, 
   Lock, Key, CheckCircle2, History, AlertCircle, Smartphone, Globe, BookOpen,
@@ -210,6 +211,7 @@ export default function MemberProfile({ member, onUpdateProfile }: MemberProfile
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwError, setPwError] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,7 +241,7 @@ export default function MemberProfile({ member, onUpdateProfile }: MemberProfile
     setTimeout(() => setNotifSuccess(false), 4000);
   };
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwError("");
     setPwSuccess(false);
@@ -253,11 +255,31 @@ export default function MemberProfile({ member, onUpdateProfile }: MemberProfile
       return;
     }
 
-    setPwSuccess(true);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setTimeout(() => setPwSuccess(false), 4000);
+    setPwLoading(true);
+    try {
+      const res = await fetch(`/api/members/${member.id}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.error || "Erro ao atualizar a palavra-passe.");
+        setPwLoading(false);
+        return;
+      }
+
+      setPwSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      showToast("Palavra-passe de segurança atualizada com sucesso!", "success");
+      setTimeout(() => setPwSuccess(false), 4000);
+    } catch (err) {
+      setPwError("Falha na comunicação com o servidor de segurança.");
+    } finally {
+      setPwLoading(false);
+    }
   };
 
   // Mock Active Sessions
@@ -319,6 +341,20 @@ export default function MemberProfile({ member, onUpdateProfile }: MemberProfile
                   className="w-full p-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#D3122A]/20 focus:border-[#D3122A] focus:bg-white outline-none transition"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono uppercase text-slate-500 font-bold mb-1.5 flex items-center justify-between">
+                  <span>Número de Identificação Militante (ADL)</span>
+                  <span className="text-[8px] bg-red-50 text-[#C8102E] font-bold px-1.5 py-0.5 rounded border border-red-100">OFICIAL</span>
+                </label>
+                <input 
+                  type="text" 
+                  value={member.membershipNo} 
+                  className="w-full p-3 bg-red-50/40 border border-red-100 rounded-xl text-xs text-[#991b1b] font-mono font-black outline-none cursor-not-allowed"
+                  disabled
+                />
+                <span className="text-[9px] text-slate-400 block mt-1.5">Número de identificação do militante (Ex: ADL). Registado na central e no cartão.</span>
               </div>
 
               <div>
@@ -1336,9 +1372,11 @@ export default function MemberProfile({ member, onUpdateProfile }: MemberProfile
               </div>
               <button
                 type="submit"
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+                disabled={pwLoading}
+                className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-400 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-2"
               >
-                Mudar Palavra-Passe
+                {pwLoading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                {pwLoading ? "A Atualizar..." : "Mudar Palavra-Passe"}
               </button>
             </form>
           </div>
